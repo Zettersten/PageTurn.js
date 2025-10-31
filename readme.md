@@ -16,23 +16,22 @@ Modern npm distribution for the classic [turn.js](https://www.turnjs.com/) page-
 - 🧱 Zero-config TypeScript typings and ergonomic wrapper API
 - ⚙️ Compatible with modern build tools (Vite, Next.js, Astro, webpack, etc.)
 - ♿ Touch and pointer aware with automatic feature detection
+- 🚀 Zero dependencies - no jQuery required
 
 ## Installation
 
 ```bash
-npm install turnjs-modern jquery
+npm install pageturn.js
 # or
-yarn add turnjs-modern jquery
+yarn add pageturn.js
 # or
-pnpm add turnjs-modern jquery
+pnpm add pageturn.js
 ```
-
-`jquery` is a peer dependency; bring your own version (≥ 3.7).
 
 ## Quick start
 
 ```ts
-import { createTurn } from 'turnjs-modern';
+import { createTurn } from 'pageturn.js';
 
 const book = createTurn('#magazine', {
   width: 800,
@@ -74,7 +73,7 @@ book.next();
 ## API surface
 
 ### `createTurn(target, options?)`
-Creates (or reuses) a turn.js instance tied to the provided element, selector, or jQuery object. Returns a typed `TurnInstance` wrapper.
+Creates (or reuses) a PageTurn.js instance tied to the provided element or selector. Returns a typed `TurnInstance` wrapper.
 
 ### `useTurn(target)`
 Wraps an existing instance without touching its configuration. Useful when the instance was created elsewhere.
@@ -129,7 +128,7 @@ Handlers registered via `TurnOptions.when` or `TurnInstance.on` receive the payl
 ## TypeScript
 
 - Rich ambient typings for the wrapper API
-- jQuery interface augmentation so `$('#magazine').turn(...)` stays typed
+- Full type safety for all methods and events
 - Source maps for effortless debugging in devtools
 
 ## Browser support

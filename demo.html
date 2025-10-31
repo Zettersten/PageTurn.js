@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PageTurn.js - Development Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .magazine-viewport {
+      width: 100%;
+      height: 600px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #magazine {
+      width: 800px;
+      height: 500px;
+      position: relative;
+    }
+
+    .page {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, #f8f9fa 0%, #fff 10%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 700;
+      color: #333;
+      border: 1px solid #dee2e6;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(0,0,0,0.05) 100%);
+      pointer-events: none;
+    }
+
+    .page:nth-child(odd) {
+      background: linear-gradient(to left, #f8f9fa 0%, #fff 10%);
+    }
+
+    .page-content {
+      text-align: center;
+      padding: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-number {
+      position: absolute;
+      bottom: 20px;
+      font-size: 1.5rem;
+      opacity: 0.6;
+    }
+
+    .page:nth-child(odd) .page-number {
+      right: 40px;
+    }
+
+    .page:nth-child(even) .page-number {
+      left: 40px;
+    }
+
+    .info-panel {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .info-panel p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .info-panel strong {
+      color: #333;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .status.active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    footer {
+      margin-top: 40px;
+      color: white;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 900px) {
+      #magazine {
+        width: 600px;
+        height: 400px;
+      }
+
+      .magazine-viewport {
+        height: 450px;
+      }
+    }
+
+    @media (max-width: 650px) {
+      #magazine {
+        width: 400px;
+        height: 300px;
+      }
+
+      .magazine-viewport {
+        height: 350px;
+      }
+
+      .page {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>?? PageTurn.js</h1>
+    <p>Modern, framework-agnostic page-flip engine</p>
+  </header>
+
+  <div class="container">
+    <div class="controls">
+      <button id="prev">? Previous</button>
+      <button id="next">Next ?</button>
+      <button id="first">? First Page</button>
+      <button id="last">Last Page ?</button>
+      <button id="toggle-display">Toggle Display</button>
+    </div>
+
+    <div class="magazine-viewport">
+      <div id="magazine">
+        <div class="page">
+          <div class="page-content">
+            <h2>Welcome</h2>
+            <p style="font-size: 1rem; margin-top: 20px;">Drag corners to flip pages</p>
+          </div>
+          <div class="page-number">1</div>
+        </div>
+        <div class="page">
+          <div class="page-content">
+            <h2>Features</h2>
+            <ul style="font-size: 1rem; text-align: left; list-style: none;">
+              <li>? No jQuery</li>
+              <li>?? TypeScript</li>
+              <li>?? Touch Support</li>
+            </ul>
+          </div>
+          <div class="page-number">2</div>
+        </div>
+        <div class="page">
+          <div class="page-content">
+            <h2>Page 3</h2>
+          </div>
+          <div class="page-number">3</div>
+        </div>
+        <div class="page">
+          <div class="page-content">
+            <h2>Page 4</h2>
+          </div>
+          <div class="page-number">4</div>
+        </div>
+        <div class="page">
+          <div class="page-content">
+            <h2>Page 5</h2>
+          </div>
+          <div class="page-number">5</div>
+        </div>
+        <div class="page">
+          <div class="page-content">
+            <h2>The End</h2>
+            <p style="font-size: 1rem; margin-top: 20px;">Thank you!</p>
+          </div>
+          <div class="page-number">6</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <p><strong>Current Page:</strong> <span id="current-page">1</span> / <span id="total-pages">6</span></p>
+      <p><strong>Display Mode:</strong> <span id="display-mode">double</span></p>
+      <p><strong>Animating:</strong> <span id="animating" class="status inactive">No</span></p>
+    </div>
+  </div>
+
+  <footer>
+    <p>Built with PageTurn.js ? Zero Dependencies ? Full TypeScript Support</p>
+  </footer>
+
+  <script type="module">
+    import { createTurn } from './dist/index.js';
+
+    // Create the book
+    const book = createTurn('#magazine', {
+      width: 800,
+      height: 500,
+      display: 'double',
+      gradients: true,
+      duration: 600,
+      acceleration: true,
+      page: 1
+    });
+
+    // Update info panel
+    function updateInfo() {
+      document.getElementById('current-page').textContent = book.page();
+      document.getElementById('total-pages').textContent = book.pages();
+      document.getElementById('display-mode').textContent = book.display();
+      
+      const animatingEl = document.getElementById('animating');
+      if (book.animating()) {
+        animatingEl.textContent = 'Yes';
+        animatingEl.className = 'status active';
+      } else {
+        animatingEl.textContent = 'No';
+        animatingEl.className = 'status inactive';
+      }
+    }
+
+    // Event handlers
+    book.on('turned', () => {
+      updateInfo();
+    });
+
+    book.on('turning', ({ page, view }) => {
+      console.log(`Turning to page ${page}, view: [${view}]`);
+      updateInfo();
+    });
+
+    book.on('start', ({ page, corner }) => {
+      console.log(`Started turning from page ${page}, corner: ${corner}`);
+    });
+
+    // Button controls
+    document.getElementById('prev').addEventListener('click', () => {
+      book.previous();
+    });
+
+    document.getElementById('next').addEventListener('click', () => {
+      book.next();
+    });
+
+    document.getElementById('first').addEventListener('click', () => {
+      book.page(1);
+    });
+
+    document.getElementById('last').addEventListener('click', () => {
+      book.page(book.pages());
+    });
+
+    document.getElementById('toggle-display').addEventListener('click', () => {
+      const currentMode = book.display();
+      book.display(currentMode === 'double' ? 'single' : 'double');
+      updateInfo();
+    });
+
+    // Handle responsive sizing
+    function resizeBook() {
+      const viewport = document.querySelector('.magazine-viewport');
+      const width = Math.min(800, viewport.clientWidth - 40);
+      const height = (width / 800) * 500;
+      book.size(width, height);
+    }
+
+    window.addEventListener('resize', resizeBook);
+    
+    // Initial update
+    updateInfo();
+    resizeBook();
+  </script>
+</body>
+</html>

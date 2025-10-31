@@ -1,5 +1,5 @@
 // @ts-nocheck
-import $ from 'jquery';
+import { $, createElement, DOMElement } from '../utils/dom.js';
 
 /**
  * turn.js 3rd release
@@ -330,7 +330,7 @@ turnMethods = {
 				data.totalPages = lastPage;
 
 			// Add element
-			data.pageObjs[page] = $(element).addClass('turn-page p' + page);
+			data.pageObjs[page] = $(element).addClass('turn-page').addClass('p' + page);
 
 			// Add page
 			turnMethods._addPage.call(this, page);
@@ -366,13 +366,16 @@ turnMethods = {
 					data.pagePlace[page] = page;
 
 					// Wrapper
-					data.pageWrap[page] = $('<div/>', {'class': 'turn-page-wrapper',
-													page: page,
-													css: {position: 'absolute',
-													overflow: 'hidden',
-													width: pageWidth,
-													height: pageHeight}}).
-													css(pagePosition[(data.display=='double') ? page%2 : 0]);
+					data.pageWrap[page] = createElement('div', {
+						'class': 'turn-page-wrapper',
+						page: page
+					}).css({
+						position: 'absolute',
+						overflow: 'hidden',
+						width: pageWidth,
+						height: pageHeight,
+						...pagePosition[(data.display=='double') ? page%2 : 0]
+					});
 
 					// Append to this
 					this.append(data.pageWrap[page]);
@@ -634,7 +637,7 @@ turnMethods = {
 				if (!data.pageObjs[0]) {
 					this.turn('stop').
 						css({'overflow': 'hidden'});
-					data.pageObjs[0] = $('<div />', {'class': 'turn-page p-temporal'}).
+					data.pageObjs[0] = createElement('div', {'class': 'turn-page p-temporal'}).
 									css({width: this.width(), height: this.height()}).
 										appendTo(this);
 				}
@@ -1314,7 +1317,7 @@ flipMethods = {
 
 
 		if (gradient && !data.bshadow)
-			data.bshadow = $('<div/>', divAtt(0, 0, 1)).
+			data.bshadow = createElement('div', divAtt(0, 0, 1)).
 				css({'position': '', width: this.width(), height: this.height()}).
 					appendTo(data.parent);
 
@@ -1376,7 +1379,7 @@ flipMethods = {
 			data.fparent = (data.opts.turn) ? data.opts.turn.data().fparent : $('#turn-fwrappers');
 
 			if (!data.fparent) {
-				var fparent = $('<div/>', {css: {'pointer-events': 'none'}}).hide();
+				var fparent = createElement('div', {css: {'pointer-events': 'none'}}).hide();
 					fparent.data().flips = 0;
 
 				if (data.opts.turn) {
@@ -1393,23 +1396,23 @@ flipMethods = {
 				data.fparent = fparent;
 			}
 
-			this.css({position: 'absolute', top: 0, left: 0, bottom: 'auto', right: 'auto'});
+		this.css({position: 'absolute', top: 0, left: 0, bottom: 'auto', right: 'auto'});
 
-			data.wrapper = $('<div/>', divAtt(0, 0, this.css('z-index'))).
-								appendTo(parent).
-									prepend(this);
+		data.wrapper = createElement('div', divAtt(0, 0, this.css('z-index'))).
+							appendTo(parent).
+								prepend(this);
 
-			data.fwrapper = $('<div/>', divAtt(parent.offset().top, parent.offset().left)).
-								hide().
-									appendTo(data.fparent);
+		data.fwrapper = createElement('div', divAtt(parent.offset().top, parent.offset().left)).
+							hide().
+								appendTo(data.fparent);
 
-			data.fpage = $('<div/>', {css: {cursor: 'default'}}).
-					appendTo($('<div/>', divAtt(0, 0, 0, 'visible')).
-								appendTo(data.fwrapper));
+		data.fpage = createElement('div', {css: {cursor: 'default'}}).
+				appendTo(createElement('div', divAtt(0, 0, 0, 'visible')).
+							appendTo(data.fwrapper));
 
-			if (data.opts.frontGradient)
-				data.ashadow = $('<div/>', divAtt(0, 0,  1)).
-					appendTo(data.fpage);
+		if (data.opts.frontGradient)
+			data.ashadow = createElement('div', divAtt(0, 0,  1)).
+				appendTo(data.fpage);
 
 			// Save data
 
@@ -1853,78 +1856,72 @@ cla = function(that, methods, args) {
 		throw args[0] + ' is an invalid value';
 };
 
-$.extend($.fn, {
+// Register methods on DOMElement prototype
+DOMElement.prototype.flip = function(req, opts) {
+	return cla(this, flipMethods, arguments);
+};
 
-	flip: function(req, opts) {
-		return cla(this, flipMethods, arguments);
-	},
+DOMElement.prototype.turn = function(req) {
+	return cla(this, turnMethods, arguments);
+};
 
-	turn: function(req) {
-		return cla(this, turnMethods, arguments);
-	},
-
-	transform: function(transform, origin) {
-
-		var properties = {};
-		
-		if (origin)
-			properties[vendor+'transform-origin'] = origin;
-		
-		properties[vendor+'transform'] = transform;
+DOMElement.prototype.transform = function(transform, origin) {
+	var properties = {};
 	
-		return this.css(properties);
-
-	},
-
-	animatef: function(point) {
-
-		var data = this.data();
-
-		if (data.effect)
-			clearInterval(data.effect.handle);
-
-		if (point) {
-
-			if (!point.to.length) point.to = [point.to];
-			if (!point.from.length) point.from = [point.from];
-			if (!point.easing) point.easing = function (x, t, b, c, data) { return c * Math.sqrt(1 - (t=t/data-1)*t) + b; };
-
-			var j, diff = [],
-				len = point.to.length,
-				that = this,
-				fps = point.fps || 30,
-				time = - fps,
-				f = function() {
-					var j, v = [];
-					time = Math.min(point.duration, time + fps);
+	if (origin)
+		properties[vendor+'transform-origin'] = origin;
 	
-					for (j = 0; j < len; j++)
-						v.push(point.easing(1, time, point.from[j], diff[j], point.duration));
+	properties[vendor+'transform'] = transform;
 
-					point.frame((len==1) ? v[0] : v);
+	return this.css(properties);
+};
 
-					if (time==point.duration) {
-						clearInterval(data.effect.handle);
-						delete data['effect'];
-						that.data(data);
-						if (point.complete)
-							point.complete();
-						}
-					};
+DOMElement.prototype.animatef = function(point) {
+	var data = this.data();
 
-			for (j = 0; j < len; j++)
-				diff.push(point.to[j] - point.from[j]);
+	if (data.effect)
+		clearInterval(data.effect.handle);
 
-			data.effect = point;
-			data.effect.handle = setInterval(f, fps);
-			this.data(data);
-			f();
-		} else {
-			delete data['effect'];
-		}
+	if (point) {
+
+		if (!point.to.length) point.to = [point.to];
+		if (!point.from.length) point.from = [point.from];
+		if (!point.easing) point.easing = function (x, t, b, c, data) { return c * Math.sqrt(1 - (t=t/data-1)*t) + b; };
+
+		var j, diff = [],
+			len = point.to.length,
+			that = this,
+			fps = point.fps || 30,
+			time = - fps,
+			f = function() {
+				var j, v = [];
+				time = Math.min(point.duration, time + fps);
+
+				for (j = 0; j < len; j++)
+					v.push(point.easing(1, time, point.from[j], diff[j], point.duration));
+
+				point.frame((len==1) ? v[0] : v);
+
+				if (time==point.duration) {
+					clearInterval(data.effect.handle);
+					delete data['effect'];
+					that.data(data);
+					if (point.complete)
+						point.complete();
+					}
+				};
+
+		for (j = 0; j < len; j++)
+			diff.push(point.to[j] - point.from[j]);
+
+		data.effect = point;
+		data.effect.handle = setInterval(f, fps);
+		this.data(data);
+		f();
+	} else {
+		delete data['effect'];
 	}
-});
-
+};
 
 $.isTouch = isTouch;
 

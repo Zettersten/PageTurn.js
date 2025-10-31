@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import { $, DOMElement } from './utils/dom.js';
 import './legacy/turn.js';
 
 import type {
@@ -11,9 +11,8 @@ import type {
   TurnWhenHandlers
 } from './types.js';
 
-type JQueryElement = JQuery<HTMLElement>;
 type AnyEventHandler = NonNullable<TurnWhenHandlers[TurnEventName]>;
-type Listener = (event: JQuery.Event, ...args: unknown[]) => void;
+type Listener = (event: Event, ...args: unknown[]) => void;
 
 const eventAdapters: Record<TurnEventName, (args: unknown[]) => unknown> = {
   start: ([opts, corner]) => ({ page: (opts as { page: number }).page, corner: corner as Corner }),
@@ -24,13 +23,13 @@ const eventAdapters: Record<TurnEventName, (args: unknown[]) => unknown> = {
   last: () => undefined
 };
 
-const toJQuery = (target: HTMLElement | JQueryElement | string): JQueryElement => {
+const toDOM = (target: HTMLElement | DOMElement | string): DOMElement => {
   if (typeof target === 'string') return $(target);
-  if ((target as JQueryElement).jquery) return target as JQueryElement;
+  if ((target as DOMElement).jquery) return target as DOMElement;
   return $(target as HTMLElement);
 };
 
-const wrapInstance = (element: JQueryElement): TurnInstance => {
+const wrapInstance = (element: DOMElement): TurnInstance => {
   const listenerRegistry = new Map<TurnEventName, Map<AnyEventHandler, Listener>>();
 
   const ensureListenerBucket = (event: TurnEventName): Map<AnyEventHandler, Listener> => {
@@ -38,73 +37,95 @@ const wrapInstance = (element: JQueryElement): TurnInstance => {
     return listenerRegistry.get(event)!;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  const turn = (element as any).turn.bind(element);
+
   const instance: TurnInstance = {
     addPage(pageElement: HTMLElement, page?: number) {
-      element.turn('addPage', pageElement, page);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('addPage', pageElement, page);
       return instance;
     },
     hasPage(page: number) {
-      return Boolean(element.turn('hasPage', page));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      return Boolean(turn('hasPage', page));
     },
     display(mode?: DisplayMode): DisplayMode | TurnInstance {
       if (mode === undefined) {
-        return element.turn('display') as DisplayMode;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        return turn('display') as DisplayMode;
       }
-      element.turn('display', mode);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('display', mode);
       return instance;
     },
     animating() {
-      return Boolean(element.turn('animating'));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      return Boolean(turn('animating'));
     },
     disable(disabled?: boolean) {
-      element.turn('disable', disabled);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('disable', disabled);
       return instance;
     },
     size(width?: number, height?: number): Size | TurnInstance {
       if (width === undefined || height === undefined) {
-        const { width: w, height: h } = element.turn('size') as Size;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const { width: w, height: h } = turn('size') as Size;
         return { width: w, height: h };
       }
-      element.turn('size', width, height);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('size', width, height);
       return instance;
     },
     resize() {
-      element.turn('resize');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('resize');
     },
     removePage(page: number) {
-      element.turn('removePage', page);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('removePage', page);
       return instance;
     },
     pages(total?: number): number | TurnInstance {
       if (total === undefined) {
-        return element.turn('pages') as number;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        return turn('pages') as number;
       }
-      element.turn('pages', total);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('pages', total);
       return instance;
     },
     range(page?: number) {
-      return element.turn('range', page) as readonly [number, number];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      return turn('range', page) as readonly [number, number];
     },
     view(page?: number) {
-      return element.turn('view', page) as readonly number[];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      return turn('view', page) as readonly number[];
     },
     page(page?: number): number | TurnInstance {
       if (page === undefined) {
-        return element.turn('page') as number;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        return turn('page') as number;
       }
-      element.turn('page', page);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('page', page);
       return instance;
     },
     next() {
-      element.turn('next');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('next');
       return instance;
     },
     previous() {
-      element.turn('previous');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('previous');
       return instance;
     },
     stop(force?: boolean) {
-      element.turn('stop', force);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      turn('stop', force);
       return instance;
     },
     on<TName extends TurnEventName>(event: TName, handler: NonNullable<TurnWhenHandlers[TName]>) {
@@ -147,28 +168,29 @@ const wrapInstance = (element: JQueryElement): TurnInstance => {
 };
 
 /**
- * Creates a turn.js instance using a DOM element or selector.
+ * Creates a PageTurn.js instance using a DOM element or selector.
  */
 export const createTurn = (
-  target: HTMLElement | JQueryElement | string,
+  target: HTMLElement | DOMElement | string,
   options: Partial<TurnOptions> = {}
 ): TurnInstance => {
-  const element = toJQuery(target);
-  element.turn(options);
+  const element = toDOM(target);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+  (element as any).turn(options);
   return wrapInstance(element);
 };
 
 /**
- * Gets a typed wrapper around an existing turn.js instance.
+ * Gets a typed wrapper around an existing PageTurn.js instance.
  */
-export const useTurn = (target: HTMLElement | JQueryElement | string): TurnInstance => {
-  const element = toJQuery(target);
+export const useTurn = (target: HTMLElement | DOMElement | string): TurnInstance => {
+  const element = toDOM(target);
   return wrapInstance(element);
 };
 
 /**
  * Indicates whether the environment supports touch interactions.
  */
-export const isTouchDevice = Boolean(($ as unknown as { isTouch?: boolean }).isTouch);
+export const isTouchDevice = 'ontouchstart' in window;
 
 export type { TurnInstance, TurnOptions, TurnWhenHandlers, DisplayMode, Size } from './types.js';
