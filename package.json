@@ -20,9 +20,11 @@
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf dist",
+    "dev": "npm run build && npx http-server -p 8080 -o demo.html",
     "lint": "eslint \"src/**/*.ts\" --ignore-pattern src/legacy/**",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "files": [
     "dist"
@@ -43,16 +45,13 @@
   "engines": {
     "node": ">=18"
   },
-  "peerDependencies": {
-    "jquery": ">=3.7.0"
-  },
   "devDependencies": {
+    "@types/jsdom": "^27.0.0",
     "@types/node": "^22.7.1",
-    "@types/jquery": "^3.5.30",
     "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
-    "jquery": "^3.7.1",
+    "jsdom": "^27.1.0",
     "prettier": "^3.3.3",
     "tsup": "^8.2.4",
     "typescript": "^5.6.2",
