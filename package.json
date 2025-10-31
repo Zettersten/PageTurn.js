@@ -1,5 +1,5 @@
 {
-  "name": "turnjs-modern",
+  "name": "pageturn.js",
   "version": "1.0.0",
   "description": "Modern, framework-agnostic page turn engine inspired by turn.js",
   "license": "BSD-3-Clause",
