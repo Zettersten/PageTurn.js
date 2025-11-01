@@ -85,7 +85,31 @@ describe('DOM utility library', () => {
       const el = createElement('div');
       el.data('test', 123);
       const data = el.data();
-      expect(data.get('test')).toBe(123);
+      expect(typeof data).toBe('object');
+      expect((data as Record<string, unknown>).test).toBe(123);
+    });
+
+    it('should support object assignment', () => {
+      const el = createElement('div');
+      el.data({ foo: { bar: 42 } });
+      const data = el.data() as Record<string, { bar: number }>;
+      expect(data.foo.bar).toBe(42);
+    });
+
+    it('should allow mutations through proxy', () => {
+      const el = createElement('div');
+      const data = el.data() as Record<string, { value: number }>;
+      data.node = { value: 5 };
+      expect((el.data() as Record<string, { value: number }>).node.value).toBe(5);
+    });
+
+    it('should mirror jQuery data + extend workflow', () => {
+      const el = createElement('div');
+      el.data({ f: {} });
+      const bag = el.data() as Record<string, any>;
+      bag.f = ($ as typeof $ & { extend: typeof $.extend }).extend(bag.f, { opts: { foo: 1 } });
+      const next = el.data() as Record<string, any>;
+      expect(next.f.opts.foo).toBe(1);
     });
   });
 
