@@ -21,7 +21,7 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "dev": "npm run build && npx http-server -p 8080 -o demo.html",
-    "lint": "eslint \"src/**/*.ts\" --ignore-pattern src/legacy/**",
+    "lint": "eslint \"src/**/*.ts\" --ignore-pattern src/legacy/** --no-warn-ignored",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

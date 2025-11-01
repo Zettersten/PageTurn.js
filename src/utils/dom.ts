@@ -197,7 +197,6 @@ export class DOMElement {
   data(key: string): unknown;
   data(key: string, value: unknown): this;
   data(entries: Record<string, unknown>): this;
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   data(key?: string | Record<string, unknown>, value?: unknown): ElementDataMap | unknown | this {
     const node = this.nodes[0];
     if (!node) return key === undefined ? new Map() : undefined;
@@ -583,13 +582,11 @@ export function createElement(tag: string, attrs?: Record<string, unknown>): DOM
   const el = document.createElement(tag);
   if (attrs) {
     const classAttr = attrs.class;
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     if (classAttr !== undefined) el.className = String(classAttr);
     const cssAttr = attrs.css;
     if (cssAttr) new DOMElement(el).css(cssAttr as Record<string, string | number>);
     Object.entries(attrs).forEach(([key, value]) => {
       if (key !== 'class' && key !== 'css' && value !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         el.setAttribute(key, String(value));
       }
     });

@@ -17,9 +17,9 @@ vi.mock('../legacy/turn.js', async () => {
 
   let instances = new WeakMap<Element, TurnState>();
 
-  const getKey = (element: DOMElement): Element => {
+  const getKey = (element: DOMElement): HTMLElement => {
     const node = element.nodes[0];
-    if (!(node instanceof Element)) {
+    if (!(node instanceof HTMLElement)) {
       throw new Error('PageTurn stub requires an element node');
     }
     return node;
@@ -30,15 +30,16 @@ vi.mock('../legacy/turn.js', async () => {
   };
 
   const ensureState = (element: DOMElement, options: Record<string, unknown>): TurnState => {
-    const root = getKey(element) as HTMLElement;
-    const pages = root ? (Array.from(root.children) as HTMLElement[]) : [];
-    const width = typeof options.width === 'number' ? (options.width as number) : root?.offsetWidth ?? 0;
-    const height = typeof options.height === 'number' ? (options.height as number) : root?.offsetHeight ?? 0;
-    const display = (options.display as 'single' | 'double') ?? 'double';
+    const root = getKey(element);
+    const pages = Array.from(root.children).filter((child): child is HTMLElement => child instanceof HTMLElement);
+    const width = typeof options.width === 'number' ? options.width : root.offsetWidth;
+    const height = typeof options.height === 'number' ? options.height : root.offsetHeight;
+    const display = options.display === 'single' || options.display === 'double' ? options.display : 'double';
+    const initialPage = typeof options.page === 'number' ? options.page : 1;
 
     return {
       pages,
-      currentPage: (options.page as number) ?? 1,
+      currentPage: initialPage,
       display,
       disabled: false,
       width,
