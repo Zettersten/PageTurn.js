@@ -1,5 +1,5 @@
 import { $, DOMElement } from './utils/dom.js';
-import './legacy/turn.js';
+import './legacy/turn.ts';
 
 import type {
   Corner,

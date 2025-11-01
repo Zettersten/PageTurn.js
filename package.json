@@ -1,7 +1,7 @@
 {
   "name": "pageturn.js",
   "version": "1.0.0",
-  "description": "Modern, framework-agnostic page turn engine inspired by turn.js",
+  "description": "PageTurn.js ? modern, framework-agnostic page turn engine with zero jQuery dependencies",
   "license": "BSD-3-Clause",
   "type": "module",
   "main": "dist/index.cjs",
@@ -21,9 +21,9 @@
     "build": "tsup",
     "clean": "rm -rf dist",
     "dev": "npm run build && npx http-server -p 8080 -o demo.html",
-    "lint": "eslint \"src/**/*.ts\" --ignore-pattern src/legacy/**",
+    "lint": "eslint \"src/**/*.ts\" --ignore-pattern src/legacy/** --no-warn-ignored",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "node vitest.runner.mjs",
     "test:watch": "vitest"
   },
   "files": [
@@ -35,12 +35,13 @@
     "animation",
     "ui"
   ],
+  "homepage": "https://pageturnjs.github.io/PageTurn.js/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/turnjs/turn.js"
+    "url": "https://github.com/PageTurnJS/PageTurn.js.git"
   },
   "bugs": {
-    "url": "https://github.com/turnjs/turn.js/issues"
+    "url": "https://github.com/PageTurnJS/PageTurn.js/issues"
   },
   "engines": {
     "node": ">=18"

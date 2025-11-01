@@ -81,11 +81,41 @@ describe('DOM utility library', () => {
       expect(el.data('foo')).toBe('bar');
     });
 
-    it('should return data map when no key provided', () => {
+    it('should return data bag when no key provided', () => {
       const el = createElement('div');
       el.data('test', 123);
       const data = el.data();
+      expect(typeof data).toBe('object');
       expect(data.get('test')).toBe(123);
+    });
+
+    it('should support object assignment', () => {
+      const el = createElement('div');
+      el.data({ foo: { bar: 42 } });
+      const data = el.data();
+      const foo = data.get('foo') as { bar: number };
+      expect(foo.bar).toBe(42);
+    });
+
+    it('should allow mutations through proxy', () => {
+      const el = createElement('div');
+      const data = el.data();
+      data.set('node', { value: 5 });
+      const node = data.get('node') as { value: number };
+      expect(node.value).toBe(5);
+    });
+
+    it('should mirror jQuery data + extend workflow', () => {
+      const el = createElement('div');
+      el.data({ f: {} });
+      const bag = el.data();
+      const initial = bag.get('f') as Record<string, unknown>;
+      const extended = ($ as typeof $ & { extend: typeof $.extend }).extend(initial ?? {}, {
+        opts: { foo: 1 }
+      });
+      bag.set('f', extended);
+      const next = el.data().get('f') as { opts: { foo: number } };
+      expect(next.opts.foo).toBe(1);
     });
   });
 
