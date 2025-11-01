@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 const require = createRequire(import.meta.url);
 
 // Ensure the setup file executes before Vitest bootstraps
-await import(pathToFileURL(require.resolve('./vitest.setup.ts')));
+await import(pathToFileURL(require.resolve('./vitest.setup.js')));
 
 const child = spawn('npx', ['vitest', 'run'], {
   stdio: 'inherit',
