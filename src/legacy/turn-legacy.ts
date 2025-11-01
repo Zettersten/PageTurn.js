@@ -1,3 +1,4 @@
+// @ts-nocheck
 import jQueryShim from './shim.js';
 
 /* turn.js r3 | turnjs.com/license.txt */

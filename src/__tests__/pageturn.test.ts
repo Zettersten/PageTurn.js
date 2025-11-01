@@ -12,12 +12,14 @@ interface TurnState {
   options: Record<string, unknown>;
 }
 
+type DOMElementInstance = import('../utils/dom.js').DOMElement;
+
 vi.mock('../legacy/turn.js', async () => {
   const { DOMElement } = await import('../utils/dom.js');
 
   let instances = new WeakMap<Element, TurnState>();
 
-  const getKey = (element: DOMElement): HTMLElement => {
+  const getKey = (element: DOMElementInstance): HTMLElement => {
     const node = element.nodes[0];
     if (!(node instanceof HTMLElement)) {
       throw new Error('PageTurn stub requires an element node');
@@ -25,11 +27,11 @@ vi.mock('../legacy/turn.js', async () => {
     return node;
   };
 
-  const emit = (element: DOMElement, _state: TurnState, event: string, payload: unknown[]): void => {
+  const emit = (element: DOMElementInstance, _state: TurnState, event: string, payload: unknown[]): void => {
     element.trigger(event, payload);
   };
 
-  const ensureState = (element: DOMElement, options: Record<string, unknown>): TurnState => {
+  const ensureState = (element: DOMElementInstance, options: Record<string, unknown>): TurnState => {
     const root = getKey(element);
     const pages = Array.from(root.children).filter((child): child is HTMLElement => child instanceof HTMLElement);
     const width = typeof options.width === 'number' ? options.width : root.offsetWidth;
@@ -56,7 +58,7 @@ vi.mock('../legacy/turn.js', async () => {
     return [page];
   };
 
-  const command = (element: DOMElement, state: TurnState, action: string, args: unknown[]): unknown => {
+  const command = (element: DOMElementInstance, state: TurnState, action: string, args: unknown[]): unknown => {
     switch (action) {
       case 'addPage': {
         const [pageElement, pageNumber] = args as [HTMLElement, number | undefined];
@@ -127,7 +129,7 @@ vi.mock('../legacy/turn.js', async () => {
     }
   };
 
-  const turnMock = vi.fn(function turn(this: DOMElement, arg: unknown, ...args: unknown[]) {
+  const turnMock = vi.fn(function turn(this: DOMElementInstance, arg: unknown, ...args: unknown[]) {
     if (typeof arg === 'object' && arg !== null && !Array.isArray(arg)) {
       const options = arg as Record<string, unknown>;
       const state = ensureState(this, options);

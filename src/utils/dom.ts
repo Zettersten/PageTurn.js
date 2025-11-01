@@ -4,6 +4,13 @@ type DOMNode = Element | Document | Window;
 type ElementDataMap = Map<string | symbol, unknown>;
 const dataStore = new WeakMap<DOMNode, ElementDataMap>();
 
+interface DataBag {
+  [key: string]: unknown;
+  get(name: string): unknown;
+  set(name: string, value: unknown): DataBag;
+  has(name: string): boolean;
+}
+
 type EventHandler = (event: Event, ...args: unknown[]) => unknown;
 
 interface EventStore {
@@ -139,12 +146,14 @@ export class DOMElement {
   }
 
   private syncIndexes(): void {
-    const self = this as unknown as Record<number, DOMNode>;
+    const self = this as unknown as Record<string, DOMNode>;
     Object.keys(self)
       .filter(key => Number.isInteger(Number(key)))
-      .forEach(key => delete self[key]);
+      .forEach(key => {
+        delete self[key];
+      });
     this.nodes.forEach((node, index) => {
-      self[index] = node;
+      self[String(index)] = node;
     });
   }
 
@@ -193,26 +202,26 @@ export class DOMElement {
   }
 
   /** Gets/sets data attributes */
-  data(): ElementDataMap;
+  data(): DataBag;
   data(key: string): unknown;
   data(key: string, value: unknown): this;
   data(entries: Record<string, unknown>): this;
-  data(key?: string | Record<string, unknown>, value?: unknown): ElementDataMap | unknown | this {
+  data(key?: string | Record<string, unknown>, value?: unknown): DataBag | unknown | this {
     const node = this.nodes[0];
-    if (!node) return key === undefined ? new Map() : undefined;
+    if (!node) return key === undefined ? (new Map() as unknown as DataBag) : undefined;
 
     const dataMap = getNodeData(node);
 
     if (key === undefined) {
       const existing = dataMap.get(DATA_PROXY_KEY);
-      if (existing) return existing as Record<string, unknown>;
+      if (existing) return existing as DataBag;
 
       const proxy = new Proxy(Object.create(null), {
         get: (_target, prop) => {
           if (prop === 'get') return (name: string) => dataMap.get(name);
           if (prop === 'set') return (name: string, val: unknown) => {
             dataMap.set(name, val);
-            return proxy;
+            return proxy as DataBag;
           };
           if (prop === 'has') return (name: string) => dataMap.has(name);
           if (prop === Symbol.toStringTag) return 'Object';
@@ -250,8 +259,8 @@ export class DOMElement {
         }
       });
 
-      dataMap.set(DATA_PROXY_KEY, proxy);
-      return proxy as Record<string, unknown>;
+      dataMap.set(DATA_PROXY_KEY, proxy as DataBag);
+      return proxy as DataBag;
     }
 
     if (typeof key === 'object') {
@@ -504,7 +513,10 @@ export class DOMElement {
   /** Checks if element is visible */
   is(selector: string): boolean {
     if (selector === ':visible') {
-      return this.elements().some(el => el.offsetWidth > 0 || el.offsetHeight > 0);
+      return this.elements().some(el => {
+        const element = el as HTMLElement;
+        return element.offsetWidth > 0 || element.offsetHeight > 0;
+      });
     }
     return this.elements().some(el => el.matches(selector));
   }
