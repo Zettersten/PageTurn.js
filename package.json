@@ -23,7 +23,7 @@
     "dev": "npm run build && npx http-server -p 8080 -o demo.html",
     "lint": "eslint \"src/**/*.ts\" --ignore-pattern src/legacy/** --no-warn-ignored",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "node vitest.runner.mjs",
     "test:watch": "vitest"
   },
   "files": [
